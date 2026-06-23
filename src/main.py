@@ -265,7 +265,10 @@ def generate_notes(goal: str):
         json=payload
     )
 
-    data = response.json()
+    try:
+        data = response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI API Error (Non-JSON): {response.text}")
 
     print(data)
 
@@ -589,7 +592,10 @@ def generate_assessment(goal: str):
         json=payload
     )
 
-    data = response.json()
+    try:
+        data = response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI API Error (Non-JSON): {response.text}")
 
     print(data)
 
@@ -893,7 +899,10 @@ Return ONLY valid JSON in this format:
         json=payload
     )
 
-    data = response.json()
+    try:
+        data = response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI API Error (Non-JSON): {response.text}")
 
     print("FULL API RESPONSE:", data)
 

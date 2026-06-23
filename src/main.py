@@ -248,7 +248,7 @@ def generate_notes(goal: str):
     """
 
     payload = {
-        "model": "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
+        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
         "messages": [
             {
                 "role": "user",
@@ -575,7 +575,7 @@ def generate_assessment(goal: str):
     """
 
     payload = {
-        "model": "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
+        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
         "messages": [
             {
                 "role": "user",
@@ -885,7 +885,7 @@ Return ONLY valid JSON in this format:
 """
 
     payload = {
-        "model": "mistralai/Mistral-7B-Instruct-v0.2:featherless-ai",
+        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
         "messages": [
             {"role": "user", "content": prompt}
         ],

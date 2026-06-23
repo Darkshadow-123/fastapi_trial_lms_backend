@@ -269,6 +269,9 @@ def generate_notes(goal: str):
 
     print(data)
 
+    if "choices" not in data:
+        raise HTTPException(status_code=500, detail=f"AI API Error: {data}")
+
     content = data["choices"][0]["message"]["content"]
 
     notes = [
@@ -590,6 +593,9 @@ def generate_assessment(goal: str):
 
     print(data)
 
+    if "choices" not in data:
+        raise HTTPException(status_code=500, detail=f"AI API Error: {data}")
+
     content = data["choices"][0]["message"]["content"]
 
     # Convert AI response string into Python dict
@@ -890,6 +896,9 @@ Return ONLY valid JSON in this format:
     data = response.json()
 
     print("FULL API RESPONSE:", data)
+
+    if "choices" not in data:
+        raise HTTPException(status_code=500, detail=f"AI API Error: {data}")
 
     content = data["choices"][0]["message"]["content"]
 

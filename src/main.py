@@ -259,11 +259,15 @@ def generate_notes(goal: str):
         "temperature": 0.7
     }
 
-    response = requests.post(
-        API_URL,
-        headers=HEADERS,
-        json=payload
-    )
+    try:
+        response = requests.post(
+            API_URL,
+            headers=HEADERS,
+            json=payload,
+            timeout=30 # Add a timeout so it doesn't hang indefinitely
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"HuggingFace Connection Failed: {str(e)}")
 
     try:
         data = response.json()
@@ -310,31 +314,36 @@ def generate_note(
     db: Session = Depends(get_db)
 ):
 
-    notes = generate_notes(goals.goal)
+    import traceback
+    try:
+        notes = generate_notes(goals.goal)
 
-    created_notes = []
+        created_notes = []
 
-    for note in notes:
+        for note in notes:
+            c_id = goals.chapter_id if goals.chapter_id else note["chapter_id"]
+            l_id = goals.lesson_id if goals.lesson_id else note["lesson_id"]
 
-        c_id = goals.chapter_id if goals.chapter_id else note["chapter_id"]
-        l_id = goals.lesson_id if goals.lesson_id else note["lesson_id"]
+            db_note = models.NoteModel(
+                title=note["title"],
+                chapter_id=c_id,
+                lesson_id=l_id,
+                content=note["content"]
+            )
 
-        db_note = models.NoteModel(
-            title=note["title"],
-            chapter_id=c_id,
-            lesson_id=l_id,
-            content=note["content"]
-        )
+            db.add(db_note)
+            created_notes.append(db_note)
 
-        db.add(db_note)
-        created_notes.append(db_note)
+        db.commit()
 
-    db.commit()
+        for note in created_notes:
+            db.refresh(note)
 
-    for note in created_notes:
-        db.refresh(note)
-
-    return created_notes
+        return created_notes
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        print("CRITICAL CRASH IN NOTES:", error_trace)
+        raise HTTPException(status_code=500, detail=f"CRITICAL BACKEND CRASH: {str(e)}\n\nTraceback:\n{error_trace}")
 
 
 print("<!---- Assessment API for creating MCQ's ----!>")
@@ -586,11 +595,15 @@ def generate_assessment(goal: str):
         "temperature": 0.7
     }
 
-    response = requests.post(
-        API_URL,
-        headers=HEADERS,
-        json=payload
-    )
+    try:
+        response = requests.post(
+            API_URL,
+            headers=HEADERS,
+            json=payload,
+            timeout=30
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"HuggingFace Connection Failed: {str(e)}")
 
     try:
         data = response.json()
@@ -905,11 +918,15 @@ Return ONLY valid JSON in this format:
         "temperature": 0.3
     }
 
-    response = requests.post(
-        API_URL,
-        headers=HEADERS,
-        json=payload
-    )
+    try:
+        response = requests.post(
+            API_URL,
+            headers=HEADERS,
+            json=payload,
+            timeout=30
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"HuggingFace Connection Failed: {str(e)}")
 
     try:
         data = response.json()
@@ -974,33 +991,39 @@ def generate_homework_api(
     db: Session = Depends(get_db)
 ):
 
-    # Generate homework using AI
-    homework = generate_homework(goals.goal)
+    import traceback
+    try:
+        # Generate homework using AI
+        homework = generate_homework(goals.goal)
 
-    c_id = goals.chapter_id if goals.chapter_id else homework.chapter_id
-    l_id = goals.lesson_id if goals.lesson_id else homework.lesson_id
+        c_id = goals.chapter_id if goals.chapter_id else homework.chapter_id
+        l_id = goals.lesson_id if goals.lesson_id else homework.lesson_id
 
-    # Create DB object
-    db_homework = models.HomeworkModel(
-        title=homework.title,
-        chapter_id=c_id,
-        lesson_id=l_id,
-        homework_questions=homework.homework_questions
-    )
+        # Create DB object
+        db_homework = models.HomeworkModel(
+            title=homework.title,
+            chapter_id=c_id,
+            lesson_id=l_id,
+            homework_questions=homework.homework_questions
+        )
 
-    print("!<----Inserting homework into DB---->!")
+        print("!<----Inserting homework into DB---->!")
 
-    db.add(db_homework)
+        db.add(db_homework)
 
-    print("!<----Committing Changes---->!")
+        print("!<----Committing Changes---->!")
 
-    db.commit()
+        db.commit()
 
-    print("!<----Refreshing DB Object---->!")
+        print("!<----Refreshing DB Object---->!")
 
-    db.refresh(db_homework)
+        db.refresh(db_homework)
 
-    return db_homework
+        return db_homework
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        print("CRITICAL CRASH IN HOMEWORK:", error_trace)
+        raise HTTPException(status_code=500, detail=f"CRITICAL BACKEND CRASH: {str(e)}\n\nTraceback:\n{error_trace}")
 
 
 print("<!---- Extra Tips API for creating Extra Tips based on Notes generated----!>")

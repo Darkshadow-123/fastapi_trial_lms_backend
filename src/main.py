@@ -604,17 +604,29 @@ def generate_assessment(goal: str):
 
     content = data["choices"][0]["message"]["content"]
 
-    # Convert AI response string into Python dict
-    assessment_data = json.loads(content)
+    # Extract JSON from markdown or preamble if any
+    try:
+        # Find first { and last }
+        start_idx = content.find('{')
+        end_idx = content.rfind('}')
+        if start_idx != -1 and end_idx != -1 and end_idx >= start_idx:
+            json_str = content[start_idx:end_idx+1]
+        else:
+            json_str = content
+
+        assessment_data = json.loads(json_str)
+    except json.JSONDecodeError:
+        print("Failed to parse JSON from AI. Raw content:", content)
+        raise HTTPException(status_code=500, detail=f"AI generated invalid JSON: {content}")
 
     # Create schema object
     assessment = schemas.AssessmentCreate(
-        title=assessment_data["title"],
-        chapter_id=assessment_data["chapter_id"],
-        lesson_id=assessment_data["lesson_id"],
-        mcq_batch=assessment_data["mcq_batch"],
-        mcq_pool=assessment_data["mcq_pool"],
-        answers_pool=assessment_data["answers_pool"]
+        title=assessment_data.get("title", "Generated Assessment"),
+        chapter_id=assessment_data.get("chapter_id", 1),
+        lesson_id=assessment_data.get("lesson_id", 1),
+        mcq_batch=assessment_data.get("mcq_batch", 1),
+        mcq_pool=assessment_data.get("mcq_pool", []),
+        answers_pool=assessment_data.get("answers_pool", [])
     )
 
     return assessment
@@ -919,31 +931,36 @@ Return ONLY valid JSON in this format:
     # Remove control characters
     content = re.sub(r'[\x00-\x1F\x7F]', '', content)
 
+    # Extract JSON from markdown or preamble if any
     try:
-        decoder = json.JSONDecoder()
-        homework_data, _ = decoder.raw_decode(content)
-
+        # Find first { or [ and last } or ]
+        # Sometimes homework might be wrapped in an array, though usually an object
+        start_idx = content.find('{')
+        end_idx = content.rfind('}')
+        if start_idx != -1 and end_idx != -1 and end_idx >= start_idx:
+            json_str = content[start_idx:end_idx+1]
+        else:
+            json_str = content
+            
+        homework_data = json.loads(json_str)
     except json.JSONDecodeError as e:
-
         print("JSON ERROR:", e)
+        print("RAW CONTENT:", content)
+        raise HTTPException(status_code=500, detail=f"AI generated invalid JSON for homework. Please try again.")
 
-        # aggressive fix
-        fixed_content = content.replace("\\", "\\\\")
-        fixed_content = re.sub(r'[\x00-\x1F\x7F]', '', fixed_content)
-
-        decoder = json.JSONDecoder()
-        homework_data, _ = decoder.raw_decode(fixed_content)
-
-    # 🔥 FIX: handle list output from model
+    # FIX: handle list output from model
     if isinstance(homework_data, list):
-        homework_data = homework_data[0]
+        if len(homework_data) > 0:
+            homework_data = homework_data[0]
+        else:
+            raise HTTPException(status_code=500, detail="AI generated an empty list for homework.")
 
     # final schema mapping
     homework = schemas.HomeworkCreate(
-        title=homework_data["title"],
-        chapter_id=homework_data["chapter_id"],
-        lesson_id=homework_data["lesson_id"],
-        homework_questions=homework_data["homework_questions"]
+        title=homework_data.get("title", "Generated Homework"),
+        chapter_id=homework_data.get("chapter_id", 1),
+        lesson_id=homework_data.get("lesson_id", 1),
+        homework_questions=homework_data.get("homework_questions", [])
     )
 
     return homework

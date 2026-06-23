@@ -1,0 +1,8 @@
+fastapi
+pydantic   #Data validation  Consistency
+sqlalchemy #ORM
+langchain
+langchain-openai
+python-dotenv
+uvicorn
+psycopg2-binary

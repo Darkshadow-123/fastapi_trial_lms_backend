@@ -22,7 +22,7 @@ app = FastAPI(
 # Add CORS middleware, 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Add your frontend origins
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "https://triallms-react.vercel.app"],  # Add your frontend origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers

@@ -88,6 +88,7 @@ def get_note(
     notes_id: Optional[int] = Query(None),
     title: Optional[str] = Query(None),
     chapter_id: Optional[int] = Query(None),
+    lesson_id: Optional[int] = Query(None),
     db: Session = Depends(get_db)
 ):
 
@@ -104,6 +105,10 @@ def get_note(
     # Filter by chapter_id
     if chapter_id is not None:
         query = query.filter(models.NoteModel.chapter_id == chapter_id)
+
+    # Filter by lesson_id
+    if lesson_id is not None:
+        query = query.filter(models.NoteModel.lesson_id == lesson_id)
 
     results = query.all()
 

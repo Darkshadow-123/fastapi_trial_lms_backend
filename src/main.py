@@ -248,7 +248,7 @@ def generate_notes(goal: str):
     """
 
     payload = {
-        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+        "model": "meta-llama/Meta-Llama-3-8B-Instruct-v0.2:featherless-ai",
         "messages": [
             {
                 "role": "user",
@@ -584,7 +584,7 @@ def generate_assessment(goal: str):
     """
 
     payload = {
-        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+        "model": "meta-llama/Meta-Llama-3-8B-Instruct-v0.2:featherless-ai",
         "messages": [
             {
                 "role": "user",
@@ -910,7 +910,7 @@ Return ONLY valid JSON in this format:
 """
 
     payload = {
-        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+        "model": "meta-llama/Meta-Llama-3-8B-Instruct-v0.2:featherless-ai",
         "messages": [
             {"role": "user", "content": prompt}
         ],

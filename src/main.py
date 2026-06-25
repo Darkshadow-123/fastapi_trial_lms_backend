@@ -85,30 +85,22 @@ def create_note(note:schemas.NoteCreate, db:Session = Depends(get_db)):
 
 @app.get('/note')
 def get_note(
-    notes_id: Optional[int] = Query(None),
     title: Optional[str] = Query(None),
-    chapter_id: Optional[int] = Query(None),
-    lesson_id: Optional[int] = Query(None),
+    chapter_name: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
 
     query = db.query(models.NoteModel)
 
-    # Filter by notes_id
-    if notes_id is not None:
-        query = query.filter(models.NoteModel.notes_id == notes_id)
-
     # Filter by title (case-insensitive partial match)
     if title is not None:
         query = query.filter(models.NoteModel.title.ilike(f"%{title}%"))
 
-    # Filter by chapter_id
-    if chapter_id is not None:
-        query = query.filter(models.NoteModel.chapter_id == chapter_id)
-
-    # Filter by lesson_id
-    if lesson_id is not None:
-        query = query.filter(models.NoteModel.lesson_id == lesson_id)
+    # Filter by chapter_name
+    if chapter_name is not None:
+        matching_chapters = db.query(models.Chapter).filter(models.Chapter.chapter_name.ilike(f"%{chapter_name}%")).all()
+        chapter_ids = [extract_numeric_id(c.uid) for c in matching_chapters]
+        query = query.filter(models.NoteModel.chapter_id.in_(chapter_ids))
 
     results = query.all()
 
@@ -385,10 +377,8 @@ def create_assessment(
 ### API to fetch single Assessment 
 @app.get('/assessment')
 def get_assessment(
-    assessment_id: Optional[int] = Query(None),
     title: Optional[str] = Query(None),
-    chapter_id: Optional[int] = Query(None),
-    lesson_id: Optional[int] = Query(None),
+    chapter_name: Optional[str] = Query(None),
     published: Optional[bool] = Query(None),
     mcq_batch: Optional[int] = Query(None),
     db: Session = Depends(get_db)
@@ -396,21 +386,15 @@ def get_assessment(
 
     query = db.query(models.AssessmentModel)
 
-    # Filter by assessment_id
-    if assessment_id is not None:
-        query = query.filter(models.AssessmentModel.assessment_id == assessment_id)
-
     # Filter by title (partial match, case-insensitive)
     if title is not None:
         query = query.filter(models.AssessmentModel.title.ilike(f"%{title}%"))
 
-    # Filter by chapter_id
-    if chapter_id is not None:
-        query = query.filter(models.AssessmentModel.chapter_id == chapter_id)
-
-    # Filter by lesson_id
-    if lesson_id is not None:
-        query = query.filter(models.AssessmentModel.lesson_id == lesson_id)
+    # Filter by chapter_name
+    if chapter_name is not None:
+        matching_chapters = db.query(models.Chapter).filter(models.Chapter.chapter_name.ilike(f"%{chapter_name}%")).all()
+        chapter_ids = [extract_numeric_id(c.uid) for c in matching_chapters]
+        query = query.filter(models.AssessmentModel.chapter_id.in_(chapter_ids))
 
     # Filter by published status
     if published is not None:
@@ -814,31 +798,23 @@ def get_all_homeworks(db:Session = Depends(get_db)):
 ### API to fetch single homework
 @app.get('/homework')
 def get_homework(
-    homework_id: Optional[int] = Query(None),
     title: Optional[str] = Query(None),
-    chapter_id: Optional[int] = Query(None),
-    lesson_id: Optional[int] = Query(None),
+    chapter_name: Optional[str] = Query(None),
     published: Optional[bool] = Query(None),
     db: Session = Depends(get_db)
 ):
 
     query = db.query(models.HomeworkModel)
 
-    # Filter by homework_id
-    if homework_id is not None:
-        query = query.filter(models.HomeworkModel.homework_id == homework_id)
-
     # Filter by title (case-insensitive partial match)
     if title is not None:
         query = query.filter(models.HomeworkModel.title.ilike(f"%{title}%"))
 
-    # Filter by chapter_id
-    if chapter_id is not None:
-        query = query.filter(models.HomeworkModel.chapter_id == chapter_id)
-
-    # Filter by lesson_id
-    if lesson_id is not None:
-        query = query.filter(models.HomeworkModel.lesson_id == lesson_id)
+    # Filter by chapter_name
+    if chapter_name is not None:
+        matching_chapters = db.query(models.Chapter).filter(models.Chapter.chapter_name.ilike(f"%{chapter_name}%")).all()
+        chapter_ids = [extract_numeric_id(c.uid) for c in matching_chapters]
+        query = query.filter(models.HomeworkModel.chapter_id.in_(chapter_ids))
 
     # Filter by published status
     if published is not None:

@@ -841,7 +841,7 @@ def get_homework(
             "title": r.title,
             "chapter_id": r.chapter_id,
             "lesson_id": r.lesson_id,
-            "homework_module": r.homework_module,
+            "homework_questions": r.homework_questions,
             "published": getattr(r, "published", False),
             "chapter_name": chapter_map.get(r.chapter_id, "Unknown Chapter"),
             "lesson_name": lesson_map.get(r.lesson_id, "Unknown Lesson")

@@ -87,6 +87,8 @@ def create_note(note:schemas.NoteCreate, db:Session = Depends(get_db)):
 def get_note(
     title: Optional[str] = Query(None),
     chapter_name: Optional[str] = Query(None),
+    lesson_id: Optional[int] = Query(None),
+    chapter_id: Optional[int] = Query(None),
     db: Session = Depends(get_db)
 ):
 
@@ -101,6 +103,12 @@ def get_note(
         matching_chapters = db.query(models.Chapter).filter(models.Chapter.chapter_name.ilike(f"%{chapter_name}%")).all()
         chapter_ids = [extract_numeric_id(c.uid) for c in matching_chapters]
         query = query.filter(models.NoteModel.chapter_id.in_(chapter_ids))
+
+    if chapter_id is not None:
+        query = query.filter(models.NoteModel.chapter_id == chapter_id)
+        
+    if lesson_id is not None:
+        query = query.filter(models.NoteModel.lesson_id == lesson_id)
 
     results = query.all()
 

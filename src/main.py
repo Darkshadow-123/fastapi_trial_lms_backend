@@ -324,13 +324,20 @@ def generate_note(
         notes = generate_notes(goals.goal)
 
         created_notes = []
+        
+        # Load lessons to get the real lesson name for the title
+        lessons = db.query(models.Lesson).all()
+        lesson_map = {extract_numeric_id(l.uid): l.lesson_name for l in lessons}
 
         for note in notes:
             c_id = goals.chapter_id if goals.chapter_id else note["chapter_id"]
             l_id = goals.lesson_id if goals.lesson_id else note["lesson_id"]
+            
+            # Use the actual lesson name as the title
+            real_title = lesson_map.get(l_id, "Generated Notes")
 
             db_note = models.NoteModel(
-                title=note["title"],
+                title=real_title,
                 chapter_id=c_id,
                 lesson_id=l_id,
                 content=note["content"]
